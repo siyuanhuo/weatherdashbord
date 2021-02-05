@@ -57,6 +57,12 @@
     var year = date.getFullYear()
     var today = `${year}/${month}/${day}`
 
+    document.querySelector('#inputCity').addEventListener('keypress', function(event) {
+      if (event.key == 'Enter') {
+        search(new MouseEvent('click'))
+      }
+    })
+
     async function search(event) {
       event.preventDefault()
       var city = document.querySelector('#inputCity').value
@@ -77,12 +83,6 @@
       showForcast(weatherInfo)
     }
 
-    // http://api.openweathermap.org/geo/1.0/direct?q=${}&limit=1&appid=975c54473563fdc329f748986088a1da         ------city coordinate
-
-    // https://api.openweathermap.org/data/2.5/onecall?lat=${}&lon=${}&exclude=daily&appid=975c54473563fdc329f748986088a1da         ------coordiante daily weather
-
-    // http://api.openweathermap.org/data/2.5/weather?q=${}&appid=975c54473563fdc329f748986088a1da       -------city current weather
-
     function showWeather(weather, city) {
       var icon = weather.current.weather[0].icon
       var temp = weather.current.temp
@@ -102,7 +102,7 @@
 
     function showForcast(weather) {
       nextday = day
-      
+      document.querySelector('#forcast').innerHTML = ''
       for (var i = 1; i <= 5; i++) {
         var forcast = weather.daily[i]
         var icon = forcast.weather[0].icon
@@ -124,9 +124,12 @@
       
     }
 
+    function addToHistory(city) {
+
+    }
+
     function historySearch(event) {
       event.preventDefault()
-      
     }
 
     function showHistory() {
