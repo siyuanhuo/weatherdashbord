@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Weather Dashboard</span>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="row">
+
+        <div id="searchbar" class="col-3">
+          <div class="row">
+            <div class="input-group mb-3">
+              <input id="inputCity" type="text" class="form-control mt-2" placeholder="Enter City" aria-label="city" aria-describedby="button-addon2">
+              <button class="btn btn-outline-primary mt-2" type="button" onclick="search(event)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div id="searchHistory" class="list-group">
+              <button type="button" class="list-group-item list-group-item-action" onclick="historySearch(event)">Cras justo odio</button>
+              <button type="button" class="list-group-item list-group-item-action">Dapibus ac facilisis in</button>
+              <button type="button" class="list-group-item list-group-item-action">Morbi leo risus</button>
+              <button type="button" class="list-group-item list-group-item-action">Porta ac consectetur ac</button>
+              <button type="button" class="list-group-item list-group-item-action" disabled>Vestibulum at eros</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="result" class="col-9">
+          <!-- view of current weather -->
+          <div id="current" class="row row-col-1"></div>
+
+          <!-- view of 5 days forcast -->
+          <div id="forcast"class="row"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    var cityList
+    var date = new Date();
+    var day = date.getDay()
+    var month = date.getMonth()+1
+    var year = date.getFullYear()
+    var today = `${year}/${month}/${day}`
+
+    async function search(event) {
+      event.preventDefault()
+      var city = document.querySelector('#inputCity').value
+      
+      //get city coordinate
+      var cityCoordinate = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=975c54473563fdc329f748986088a1da`).then(r => r.json())
+      console.log('city coordinate')
+      console.log(cityCoordinate[0])
+      var lat = cityCoordinate[0].lat
+      var lon = cityCoordinate[0].lon
+
+      // get city weather forcast using previous coordinate
+      var weatherInfo = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=hourly,minutely&units=metric&appid=975c54473563fdc329f748986088a1da`).then(r => r.json())
+      console.log('forcast')
+      console.log(weatherInfo)
+
+      showWeather(weatherInfo, cityCoordinate[0].name)
+      showForcast(weatherInfo)
+    }
+
+    // http://api.openweathermap.org/geo/1.0/direct?q=${}&limit=1&appid=975c54473563fdc329f748986088a1da         ------city coordinate
+
+    // https://api.openweathermap.org/data/2.5/onecall?lat=${}&lon=${}&exclude=daily&appid=975c54473563fdc329f748986088a1da         ------coordiante daily weather
+
+    // http://api.openweathermap.org/data/2.5/weather?q=${}&appid=975c54473563fdc329f748986088a1da       -------city current weather
+
+    function showWeather(weather, city) {
+      var icon = weather.current.weather[0].icon
+      var temp = weather.current.temp
+      var humi = weather.current.humidity
+      var speed = weather.current.wind_speed
+      var ui = weather.current.uvi
+      document.querySelector('#current').innerHTML = `
+        <div class="col">
+          <h2>${city} ${today} <img src="http://openweathermap.org/img/wn/${icon}.png" alt=""></h1>
+          <p>Temperature: ${temp}°C</p>
+          <p>Humidity: ${humi}%</p>
+          <p>Wind Speed: ${speed}m/s</p>
+          <p>UV index: ${ui}</p>
+        </div>
+      `
+    }
+
+    function showForcast(weather) {
+      nextday = day
+      
+      for (var i = 1; i <= 5; i++) {
+        var forcast = weather.daily[i]
+        var icon = forcast.weather[0].icon
+        var temp = forcast.temp.day
+        var humi = forcast.humidity
+        document.querySelector('#forcast').innerHTML += `
+          <div class="col-3">
+            <div class="card text-white bg-primary mb-3">
+              <div class="card-body">
+                <h6 class="card-title">${year}/${month}/${day+i}</h6>
+                <img src="http://openweathermap.org/img/wn/${icon}.png" alt="weather-icon">
+                <p class="card-text">Temp:${temp}°C</p>
+                <p class="card-text">Humidify:${humi}%</p>
+              </div>
+            </div>
+          </div>
+        `
+      }
+      
+    }
+
+    function historySearch(event) {
+      event.preventDefault()
+      
+    }
+
+    function showHistory() {
+      cityList = localStorage.history ? JSON.parse(localStorage.history) : {}
+    }
+  </script>
+
+</html>
