@@ -28,13 +28,7 @@
           </div>
 
           <div class="row mt-2">
-            <div id="searchHistory" class="list-group">
-              <button type="button" class="list-group-item list-group-item-action" onclick="historySearch(event)">Cras justo odio</button>
-              <button type="button" class="list-group-item list-group-item-action">Dapibus ac facilisis in</button>
-              <button type="button" class="list-group-item list-group-item-action">Morbi leo risus</button>
-              <button type="button" class="list-group-item list-group-item-action">Porta ac consectetur ac</button>
-              <button type="button" class="list-group-item list-group-item-action" disabled>Vestibulum at eros</button>
-            </div>
+            <div id="searchHistory" class="list-group"></div>
           </div>
         </div>
 
@@ -50,12 +44,15 @@
   </body>
 
   <script>
-    var cityList
+    var cityList = []
+    var cityStorage = {cityList}
     var date = new Date();
     var day = date.getDay()
     var month = date.getMonth()+1
     var year = date.getFullYear()
     var today = `${year}/${month}/${day}`
+
+    showHistory()
 
     document.querySelector('#inputCity').addEventListener('keypress', function(event) {
       if (event.key == 'Enter') {
@@ -78,9 +75,12 @@
       var weatherInfo = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=hourly,minutely&units=metric&appid=975c54473563fdc329f748986088a1da`).then(r => r.json())
       console.log('forcast')
       console.log(weatherInfo)
-
-      showWeather(weatherInfo, cityCoordinate[0].name)
+      
+      var cityName = cityCoordinate[0].name
+      showWeather(weatherInfo, cityName)
       showForcast(weatherInfo)
+      addToHistory(cityName)
+      showHistory()
     }
 
     function showWeather(weather, city) {
@@ -125,16 +125,31 @@
     }
 
     function addToHistory(city) {
+      if (!cityList.includes(city)) {
+        if (cityList.length >= 5) {
+          cityList.pop()
+        }
+        cityList.unshift(city)
+      }
+      localStorage.cities = JSON.stringify(cityStorage)
+    }
 
+    function showHistory() {
+      document.querySelector('#searchHistory').innerHTML = ''
+      cityList = JSON.parse(localStorage.cities).cityList
+      for (var i = 0; i < cityList.length; i++) {
+        document.querySelector('#searchHistory').innerHTML += `
+        <button type="button" class="list-group-item list-group-item-action" onclick="historySearch(event)">${cityList[i]}</button>
+        `
+      }
     }
 
     function historySearch(event) {
       event.preventDefault()
+
     }
 
-    function showHistory() {
-      cityList = localStorage.history ? JSON.parse(localStorage.history) : {}
-    }
+    
   </script>
 
 </html>
