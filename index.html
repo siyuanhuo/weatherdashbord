@@ -65,7 +65,7 @@
         var city = document.querySelector('#inputCity').value
         
         //get city coordinate
-        var cityCoordinate = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=975c54473563fdc329f748986088a1da`).then(r => r.json())
+        var cityCoordinate = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=975c54473563fdc329f748986088a1da`).then(r => r.json())
         console.log('city coordinate')
         console.log(cityCoordinate[0])
         var lat = cityCoordinate[0].lat
